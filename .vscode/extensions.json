@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "stylelint.vscode-stylelint",
+    "bradlc.vscode-tailwindcss",
+    "prisma.prisma",
+    "ajmnz.prisma-import",
+    "streetsidesoftware.code-spell-checker"
+  ]
+}

@@ -1,95 +1,79 @@
+"use client";
+
+import { useForm, SubmitHandler, FieldValues } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
-import styles from "./page.module.css";
+import { useState } from "react";
+import { toast } from "react-hot-toast";
+import styles from "./page.module.scss";
+import { FormData, schema } from "./schema";
+import { handleFormSubmission } from "./action";
 
 export default function Home() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+  });
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
+    try {
+      await handleFormSubmission({
+        ...data,
+        profileImage: data.profileImage[0],
+      });
+      toast.success("フォームが正常に送信されました！");
+    } catch (error) {
+      toast.error("フォームの送信に失敗しました。");
+      console.error(error);
+    }
+  };
+
+  const onError = (errors: FieldValues) => {
+    toast.error("フォームの送信に失敗しました。");
+    console.error(errors);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setProfileImage(URL.createObjectURL(e.target.files[0]));
+    }
+  };
+
   return (
     <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
+      <form onSubmit={handleSubmit(onSubmit, onError)} className={styles.form}>
+        <div className={styles.field}>
+          <label>プロフィール画像</label>
+          <input
+            type="file"
+            {...register("profileImage")}
+            onChange={handleImageChange}
+          />
+          {profileImage && (
             <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
+              src={profileImage}
+              alt="Profile Image"
               width={100}
-              height={24}
-              priority
+              height={100}
             />
-          </a>
+          )}
         </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+        <div className={styles.field}>
+          <label>氏名</label>
+          <input type="text" {...register("name")} />
+          {errors.name && <p>{errors.name.message}</p>}
+        </div>
+        <div className={styles.field}>
+          <label>自己紹介</label>
+          <textarea {...register("bio")} />
+          {errors.bio && <p>{errors.bio.message}</p>}
+        </div>
+        <button type="submit">送信</button>
+      </form>
     </main>
   );
 }
