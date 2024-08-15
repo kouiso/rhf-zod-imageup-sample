@@ -1,14 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { FormData } from "./schema"; // type-only import
 
-type Overwrite<T, U extends { [Key in keyof T]?: unknown }> = Omit<T, keyof U> &
-  U;
-
-export async function handleFormSubmission(
-  data: Overwrite<FormData, { profileImage: File | null }>
-) {
+export async function handleFormSubmission(data: FormData) {
   try {
     // モックなデータベース処理
     console.log("データベースに保存中...", data);

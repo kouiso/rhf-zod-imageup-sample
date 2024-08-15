@@ -4,9 +4,10 @@ import { useForm, SubmitHandler, FieldValues } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import { useState } from "react";
-import { toast } from "react-hot-toast";
+import { toast, Toaster } from "react-hot-toast";
 import styles from "./page.module.scss";
-import { FormData, schema } from "./schema";
+import type { FormData } from "./schema"; // type-only import
+import { schema } from "./schema";
 import { handleFormSubmission } from "./action";
 
 export default function Home() {
@@ -21,10 +22,14 @@ export default function Home() {
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     try {
-      await handleFormSubmission({
-        ...data,
-        profileImage: data.profileImage[0],
-      });
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("bio", data.bio);
+      if (data.profileImage[0]) {
+        formData.append("profileImage", data.profileImage[0]);
+      }
+
+      await handleFormSubmission(formData);
       toast.success("フォームが正常に送信されました！");
     } catch (error) {
       toast.error("フォームの送信に失敗しました。");
@@ -74,6 +79,7 @@ export default function Home() {
         </div>
         <button type="submit">送信</button>
       </form>
+      <Toaster />
     </main>
   );
 }
