@@ -1,8 +1,18 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import type { FormData } from "./schema"; // 修正
 
-export async function handleFormSubmission(data: FormData) {
+export type FormState = {
+  message: string;
+  fields?: Record<string, string>;
+  issues?: string[];
+};
+
+export async function handleFormSubmission(
+  prevState: FormState,
+  data: FormData
+): Promise<FormState> {
   try {
     // モックなデータベース処理
     console.log("データベースに保存中...", data);
@@ -10,8 +20,13 @@ export async function handleFormSubmission(data: FormData) {
 
     // 成功メッセージ
     revalidatePath("/"); // キャッシュの再検証
+
+    return { message: "フォームが正常に送信されました。" };
   } catch (error) {
     console.error("データベース処理中にエラーが発生しました:", error);
-    throw new Error("データベース処理中にエラーが発生しました。");
+    return {
+      message: "データベース処理中にエラーが発生しました。",
+      issues: [error.message],
+    };
   }
 }

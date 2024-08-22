@@ -10,8 +10,13 @@ import type { FormData } from "./schema"; // type-only import
 import { schema } from "./schema";
 import { handleFormSubmission } from "./action";
 import { ImageUpload } from "./image-upload";
+import { useActionState } from "react"; // 修正
 
 export default function Home() {
+  const [state, formAction] = useActionState(handleFormSubmission, {
+    message: "",
+  }); // 修正
+
   const {
     register,
     handleSubmit,
@@ -19,6 +24,11 @@ export default function Home() {
     control,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
+    defaultValues: {
+      name: "",
+      bio: "",
+      ...(state?.fields ?? {}), // 修正
+    },
   });
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
@@ -30,7 +40,7 @@ export default function Home() {
         formData.append("profileImage", data.profileImage[0]);
       }
 
-      await handleFormSubmission(formData);
+      await formAction(formData); // 修正
       toast.success("フォームが正常に送信されました！");
     } catch (error) {
       toast.error("フォームの送信に失敗しました。");
@@ -45,6 +55,21 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
+      {state?.message !== "" && !state.issues && (
+        <div className="text-red-500">{state.message}</div>
+      )}
+      {state?.issues && (
+        <div className="text-red-500">
+          <ul>
+            {state.issues.map((issue) => (
+              <li key={issue} className="flex gap-1">
+                <X fill="red" />
+                {issue}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <form onSubmit={handleSubmit(onSubmit, onError)} className={styles.form}>
         <ImageUpload name="profileImage" control={control} />
         <div className={styles.field}>
