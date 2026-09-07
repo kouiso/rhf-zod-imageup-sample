@@ -1,4 +1,4 @@
-import Greeting1 from "@/components/greeting-1";
+import Greeting1 from "@/component/greeting-1";
 import { FC } from "react";
 
 const Home: FC = () => {
